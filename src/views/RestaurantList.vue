@@ -3,8 +3,8 @@
     <FilterBar></FilterBar>
     <ul class="restaurant-list">
       <li v-for="restaurant in filterByfilterType" :key="restaurant.name" >
-        <span>{{ restaurant.name }}</span>
-        <span v-show="filterType === 'distance'">{{ restaurant.distance }}</span>
+        <span>{{ restaurant.name }}</span><br>
+        <span v-show="filterType === 'distance'">{{ restaurant.distance }} m</span>
         <span v-show="filterType === 'rating'">{{ restaurant.rating }}</span>
       </li>
     </ul>

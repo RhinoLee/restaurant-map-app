@@ -20,14 +20,29 @@ export default {
       userMarker: null,
       infoPane: null,
       currentInfoWindow: null,
+      bounds: null,
       defaultMapCanter: { lat: 25.0059349, lng: 121.4215651 },
       userPosition: { lat: null, lng: null },
+      mapMarker: null,
       allMarkers: []
+    }
+  },
+  computed: {
+    radius() {
+      return this.$store.state.radius
+    }
+  },
+  watch: {
+    radius(val) {
+      if( val > 0 ) {
+        this.checkNearbyRestaurant(this.userPosition, val);
+      }
     }
   },
   methods: {
     mapInit() {
       let infoWindow = new google.maps.InfoWindow;
+      this.bounds = new google.maps.LatLngBounds();
       this.currentInfoWindow = infoWindow;
       this.infoPane = this.$refs["panel"]
       this.map = new google.maps.Map(this.$refs["map"], {
@@ -41,9 +56,10 @@ export default {
           const location = { lat: position.coords.latitude, lng: position.coords.longitude }
           this.userPosition = location
 
+          this.bounds.extend(this.userPosition);
           this.setUserMarker()
           this.map.setCenter(this.userPosition);
-          this.checkNearbyRestaurant(this.userPosition);
+          this.checkNearbyRestaurant(this.userPosition, this.radius);
         })
       }else {
         console.log("Browser doesn't support Geolocation");
@@ -61,31 +77,33 @@ export default {
       });
     },
     createMarkers(places) {
+      this.clearMarker()
       places.forEach(place => {
 
-        let marker = new google.maps.Marker({
+        this.mapMarker = new google.maps.Marker({
           position: place.geometry.location,
           map: this.map,
           animation: google.maps.Animation.DROP,
           title: place.name
         });
 
-        this.allMarkers.push(marker)
-
-        google.maps.event.addListener(marker, 'click', () => {
-          let request = {
-            placeId: place.place_id,
-            fields: ['name', 'formatted_address', 'geometry', 'rating', 'website', 'photos', 'formatted_phone_number', 'opening_hours','utc_offset_minutes']
-          };
-
-          this.service.getDetails(request, (placeResult, status) => {
-            this.resultHandler(placeResult, marker, status)
-          });
-        });
-
+        this.allMarkers.push(this.mapMarker)
+        this.markerEventHandler(place, this.mapMarker)
+        this.bounds.extend(place.geometry.location);
       });
+      this.map.fitBounds(this.bounds);
+    },
+    markerEventHandler(place, marker) {
+      google.maps.event.addListener(marker, 'click', () => {
+        let request = {
+          placeId: place.place_id,
+          fields: ['name', 'formatted_address', 'geometry', 'rating', 'website', 'photos', 'formatted_phone_number', 'opening_hours','utc_offset_minutes']
+        };
 
-      
+        this.service.getDetails(request, (placeResult, status) => {
+          this.resultHandler(placeResult, marker, status)
+        });
+      });
     },
     markerActive(marker) {
       this.allMarkers.forEach(marker => {
@@ -94,13 +112,20 @@ export default {
       
       marker.setAnimation(google.maps.Animation.BOUNCE);
     },
-    checkNearbyRestaurant(position) {
+    clearMarker() {
+      this.allMarkers.forEach(marker => {
+        marker.setMap(null)
+        marker.setVisible(false)
+      })
+      this.allMarkers = []; 
+    },
+    checkNearbyRestaurant(position, radius = 1500) {
       let request = {
         location: position,
-        rankBy: google.maps.places.RankBy.DISTANCE,
-        keyword: 'restaurant'
+        radius,
+        keyword: 'restaurant',
       };
-
+      
       const nearbyCallback = (results, status) => {
         if (status == google.maps.places.PlacesServiceStatus.OK) {
           this.calcDistance(results)
@@ -133,12 +158,12 @@ export default {
       if(Array.isArray(placeResult)) {
         placeResult.forEach( result => {
         distance = google.maps.geometry.spherical.computeDistanceBetween(userPosition, result.geometry.location)
-        result.distance = `${parseFloat(distance.toFixed(1))}m`
+        result.distance = `${parseFloat(distance.toFixed(1))}`
         
         })
       }else {
         distance = google.maps.geometry.spherical.computeDistanceBetween(userPosition, placeResult.geometry.location)
-        placeResult.distance = `${parseFloat(distance.toFixed(1))}m`
+        placeResult.distance = `${parseFloat(distance.toFixed(1))}`
       }
        
     },
