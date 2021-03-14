@@ -170,6 +170,10 @@ export default {
     }
   },
   mounted() {
+    let script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.VUE_APP_GOOGLEMAP_ENV_VARIABLE}&libraries=geometry,places&callback=initMap`;
+    document.body.appendChild(script);
+    
     window['initMap'] = () => {
       this.mapInit()
     };
