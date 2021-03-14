@@ -185,7 +185,7 @@ export default {
   #panel {
     box-sizing: border-box;
     height: 100%;
-    background-color: rgba(#f6e43f, .8);
+    background-color: rgba(#988778, .8);
     position: fixed;
     width: 300px;
     left: -300px;
@@ -199,18 +199,4 @@ export default {
     }
   }
   
-  .place, p {
-    font-family: 'open sans', arial, sans-serif;
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .details {
-    color: darkslategrey;
-  }
-
-  a {
-    text-decoration: none;
-    color: cadetblue;
-  }
 </style>
