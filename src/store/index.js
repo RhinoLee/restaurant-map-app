@@ -9,6 +9,7 @@ export default createStore({
     service: null,
     mapMarker: null,
     allMarkers: [],
+    nowMarker: null,
     resultList: null,
     placeInfo: null,
     nowRestaurant: '',
@@ -38,8 +39,5 @@ export default createStore({
           return state.resultList
       }
     }
-  },
-  actions: {
-
   },
 })

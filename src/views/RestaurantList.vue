@@ -110,8 +110,12 @@ export default {
 
   @media screen and (min-width: 992px) {
     .restaurant-list-card {
+      width: 380px;
       padding: 30px;
       right: 5%;
+      .card-box {
+        overflow-x: none;
+      }
       #trigger-button {
         display: none;
       }
