@@ -3,13 +3,16 @@ import { createStore } from 'vuex'
 export default createStore({
   /* eslint-disable no-undef */
   state: {
+    map: null,
+    bounds: null,
+    infoPane: null,
+    service: null,
+    mapMarker: null,
+    allMarkers: [],
     resultList: null,
     placeInfo: null,
+    nowRestaurant: '',
     radius: 1500,
-    userPosition: {
-      lat: null,
-      lng: null
-    },
     filterType: ''
   },
   mutations: {

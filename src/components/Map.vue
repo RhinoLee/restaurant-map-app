@@ -1,7 +1,7 @@
 <template>
   <div id="map" ref="map"></div>
   <InfoPanel></InfoPanel>
-  <RestaurantList></RestaurantList>
+  <RestaurantList @listMark="listConnectMark"></RestaurantList>
 </template>
 
 <script>
@@ -15,16 +15,9 @@ export default {
   },
   data(){
     return {
-      map: null,
-      service: null,
       userMarker: null,
-      infoPane: null,
-      currentInfoWindow: null,
-      bounds: null,
       defaultMapCanter: { lat: 25.0059349, lng: 121.4215651 },
       userPosition: { lat: null, lng: null },
-      mapMarker: null,
-      allMarkers: []
     }
   },
   computed: {
@@ -41,14 +34,14 @@ export default {
   },
   methods: {
     mapInit() {
-      let infoWindow = new google.maps.InfoWindow;
-      this.bounds = new google.maps.LatLngBounds();
-      this.currentInfoWindow = infoWindow;
-      this.infoPane = this.$refs["panel"]
-      this.map = new google.maps.Map(this.$refs["map"], {
+      this.$store.state.bounds = new google.maps.LatLngBounds();
+      this.$store.state.infoPane = this.$refs["panel"]
+      this.$store.state.map = new google.maps.Map(this.$refs["map"], {
         center: this.defaultMapCanter,
         zoom: 15,
       });
+
+      this.checkUserLocation()
     },
     checkUserLocation() {
       if (navigator.geolocation) {
@@ -56,9 +49,9 @@ export default {
           const location = { lat: position.coords.latitude, lng: position.coords.longitude }
           this.userPosition = location
 
-          this.bounds.extend(this.userPosition);
+          this.$store.state.bounds.extend(this.userPosition);
           this.setUserMarker()
-          this.map.setCenter(this.userPosition);
+          this.$store.state.map.setCenter(this.userPosition);
           this.checkNearbyRestaurant(this.userPosition, this.radius);
         })
       }else {
@@ -73,51 +66,54 @@ export default {
       this.userMarker = new google.maps.Marker({
         position: this.userPosition,
         icon,
-        map: this.map,
+        map: this.$store.state.map,
       });
     },
     createMarkers(places) {
       this.clearMarker()
       places.forEach(place => {
 
-        this.mapMarker = new google.maps.Marker({
+        this.$store.state.mapMarker = new google.maps.Marker({
           position: place.geometry.location,
-          map: this.map,
+          map: this.$store.state.map,
           animation: google.maps.Animation.DROP,
           title: place.name
         });
 
-        this.allMarkers.push(this.mapMarker)
-        this.markerEventHandler(place, this.mapMarker)
-        this.bounds.extend(place.geometry.location);
+        this.$store.state.allMarkers.push(this.$store.state.mapMarker)
+        this.markerEventHandler(place.place_id, this.$store.state.mapMarker)
+        this.$store.state.bounds.extend(place.geometry.location);
       });
-      this.map.fitBounds(this.bounds);
+      this.$store.state.map.fitBounds(this.$store.state.bounds);
     },
-    markerEventHandler(place, marker) {
+    markerEventHandler(placeId, marker, immediate = false) {
       google.maps.event.addListener(marker, 'click', () => {
         let request = {
-          placeId: place.place_id,
+          placeId,
           fields: ['name', 'formatted_address', 'geometry', 'rating', 'website', 'photos', 'formatted_phone_number', 'opening_hours','utc_offset_minutes']
         };
 
-        this.service.getDetails(request, (placeResult, status) => {
+        this.$store.state.service.getDetails(request, (placeResult, status) => {
           this.resultHandler(placeResult, marker, status)
         });
       });
+      if(immediate) {
+        new google.maps.event.trigger( marker, 'click' );
+      }
     },
     markerActive(marker) {
-      this.allMarkers.forEach(marker => {
+      this.$store.state.allMarkers.forEach(marker => {
         marker.setAnimation(null);
       })   
       
       marker.setAnimation(google.maps.Animation.BOUNCE);
     },
     clearMarker() {
-      this.allMarkers.forEach(marker => {
+      this.$store.state.allMarkers.forEach(marker => {
         marker.setMap(null)
         marker.setVisible(false)
       })
-      this.allMarkers = []; 
+      this.$store.state.allMarkers = []; 
     },
     checkNearbyRestaurant(position, radius = 1500) {
       let request = {
@@ -135,8 +131,8 @@ export default {
         }
       }
 
-      this.service = new google.maps.places.PlacesService(this.map);
-      this.service.nearbySearch(request, nearbyCallback);
+      this.$store.state.service = new google.maps.places.PlacesService(this.$store.state.map);
+      this.$store.state.service.nearbySearch(request, nearbyCallback);
 
     },
     resultHandler(placeResult, marker, status) {
@@ -145,7 +141,7 @@ export default {
 
         this.calcDistance(placeResult)
         this.markerActive(marker)
-        console.log(placeResult);
+        this.$store.commit('setState', {type: 'nowRestaurant', val: marker.title})
         this.$store.commit('setState', {type: 'placeInfo', val: placeResult})
 
       } else {
@@ -167,11 +163,13 @@ export default {
       }
        
     },
+    listConnectMark(val) {
+      this.markerEventHandler(val.placeId, val.marker, true)
+    }
   },
   mounted() {
     window['initMap'] = () => {
       this.mapInit()
-      this.checkUserLocation()
     };
   },
 }

@@ -2,7 +2,7 @@
   <div class="restaurant-list-card" v-if="filterByfilterType">
     <FilterBar></FilterBar>
     <ul class="restaurant-list">
-      <li v-for="restaurant in filterByfilterType" :key="restaurant.name" >
+      <li :class="{'active': nowRestaurant === restaurant.name }" @click="showInfo(restaurant)" v-for="restaurant in filterByfilterType" :key="restaurant.name" >
         <span class="name">{{ restaurant.name }}</span><br>
         <span v-show="filterType === 'distance'">距離：{{ restaurant.distance }} m</span>
         <span v-show="filterType === 'rating'">評價：{{ restaurant.rating }}</span>
@@ -23,8 +23,21 @@ export default {
     },
     filterType() {
       return this.$store.state.filterType
+    },
+    nowRestaurant() {
+      return this.$store.state.nowRestaurant
     }
   },
+  methods: {
+    showInfo(restaurant) {
+      const marker = this.$store.state.allMarkers.filter(marker => {
+        return marker.title === restaurant.name
+      })[0]
+
+      const val = { placeId: restaurant.place_id, marker }
+      this.$emit('listMark', val)
+    }
+  }
 }
 </script>
 
@@ -47,7 +60,7 @@ export default {
       color: #ddd;
       cursor: pointer;
       transition: .3s;
-      &:hover {
+      &:hover, &.active {
         color: #fff;
       }
     }

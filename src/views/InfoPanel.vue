@@ -1,7 +1,7 @@
 <template>
   <template v-if="placeInfo">
     <div id="panel" class="open">
-      <!-- <img v-if="placeInfo.photos[0].getUrl()" :src="placeInfo.photos[0].getUrl()" style="width: 100%;"> -->
+      <img v-if="placeInfo.photos[0].getUrl()" :src="placeInfo.photos[0].getUrl()" style="width: 100%;">
       <h1 class="place">{{placeInfo.name}}</h1>
       <p class="details">評價：{{placeInfo.rating}}</p>
       <p class="details">地址：{{placeInfo.formatted_address}}</p>
