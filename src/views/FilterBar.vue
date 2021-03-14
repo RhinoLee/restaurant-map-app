@@ -55,9 +55,9 @@ export default {
   input {
     outline: none
   }
-  label, input {
+  label, input, span {
     margin: 0;
-    font-size: 18px;
+    font-size: 14px;
   }
   input[type="number"] {
     border: none;
@@ -84,5 +84,11 @@ export default {
       }
     }
 
+  }
+
+  @media screen and (min-width: 992px) {
+    label, input, span {
+      font-size: 18px;
+    }
   }
 </style>

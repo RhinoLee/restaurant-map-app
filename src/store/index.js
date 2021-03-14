@@ -12,6 +12,7 @@ export default createStore({
     resultList: null,
     placeInfo: null,
     nowRestaurant: '',
+    panelOpen: false,
     radius: 1500,
     filterType: ''
   },

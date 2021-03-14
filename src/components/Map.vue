@@ -142,6 +142,8 @@ export default {
         this.calcDistance(placeResult)
         this.markerActive(marker)
         this.$store.commit('setState', {type: 'nowRestaurant', val: marker.title})
+        this.$store.commit('setState', {type: 'nowMarker', val: marker})
+        this.$store.commit('setState', {type: 'panelOpen', val: true})
         this.$store.commit('setState', {type: 'placeInfo', val: placeResult})
 
       } else {
@@ -180,21 +182,6 @@ export default {
   #map {
     height: 100%;
   }
-  #panel {
-    box-sizing: border-box;
-    height: 100%;
-    background-color: rgba(#988778, .8);
-    position: fixed;
-    width: 300px;
-    left: -300px;
-    top: 0;
-    padding: 20px;
-    z-index: 1;
-    overflow-x: hidden;
-    transition: all 1s ease-out;
-    &.open {
-      left: 0
-    }
-  }
+  
   
 </style>
